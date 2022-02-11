@@ -1,0 +1,210 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{pgfplots}
+\usepackage{subfigure}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+    \pgfplotsset{compat=1.17}
+\begin{document}
+
+\title{Causal discovery for time series with latent confounders\\
+\thanks{I thank Paul-Christian Buerkner for helpful discussions and
+suggestions.}
+}
+
+\author{
+
+\IEEEauthorblockN{Christian Reiser}
+\IEEEauthorblockA{
+\textit{University of Stuttgart}\\
+Stuttgart, Germany \\
+st141151@stud.uni-stuttgart.de\\
+christian.reiser@insightme.org}
+
+% \and
+
+% \IEEEauthorblockN{Tanja Blascheck}
+% \IEEEauthorblockA{
+% \textit{University of Stuttgart}\\
+% Stuttgart, Germany \\
+% tanja.blascheck@vis.uni-stuttgart.de}
+
+% \and
+
+% \IEEEauthorblockN{Benedikt V. Ehinger}
+% \IEEEauthorblockA{
+% \textit{University of Stuttgart}\\
+% Stuttgart, Germany \\
+% benedikt.ehinger@vis.uni-stuttgart.de}
+
+}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+causal discovery, causal inference
+\end{IEEEkeywords}
+
+%=============================================================================
+\section{Introduction}
+causal knowledge helps 
+
+understand and model physical systems, predict effect of interventions
+
+gain knowledge by experimental interventions 
+
+infeasible, expensive unethical. 
+
+observational causal discovery
+
+challenges:
+latent confounders, high dimensionality, non-linar dependencies, 
+time-series: autocorrelation, higher dim due to time lags, 
+
+constraint based methods in time series with latent confounders
+
+our contribution is: ...
+
+structure of the paper is introduction in problem and existing methods, our method, experiments, discussion
+
+%=============================================================================
+\section{theory}
+
+Consider a multivariate state generator that we want reconstruct from data.
+We assume it is stationary and follows a vector-auto-regressive process, described by the structural causal model
+\begin{equation}
+V_{t}^{j}=f_{j}\left(pa\left(V_{t}^{j}\right), \eta_{t}^{j}\right) \quad \text { with } j=1, \ldots, \tilde{N},
+\end{equation}
+generating a multivariate time series $\mathbf{V}^{j}=\left(V_{t}^{j}, V_{t-1}^{j}, \ldots\right)$ for $j=1, \ldots, \tilde{N}$.
+
+The functions $f_i$ describe mechanisms in the physical world which depend on a set of causal parents $p a\left(V_{t}^{j}\right) \subseteq\left(\mathbf{V}_{t}, \mathbf{V}_{t-1}, \ldots, \mathbf{V}_{t-p_{t s}}\right)$ and noise variables $\eta_{t}^{j}$. The noise variables are jointly independent.
+
+The causal dependency of a pair of variables $\left(V_{t-\tau}^{i}, V_{t^{}}^{j}\right)$, with the time lag $\tau \geq 0$ is the same as for all time shifted pairs $\left(V_{t^{\prime}-\tau}^{i}, V_{t^{\prime}}^{j}\right)$ due to stationarity.
+
+We allow for contemporaneous effects, because in practice measurements are often averages of consecutive time points, which may be slower than the time scale of the causal processes. However, we still assume that there are no cyclic causal relationships.
+
+Furthermore, we allow latent variables as often only a subset $\mathbf{X}=\left\{\mathbf{X}^{1}, \ldots, \mathbf{X}^{N}\right\} \subseteq \mathbf{V}=\left\{\mathbf{V}^{1}, \mathbf{V}^{2}, \ldots\right\}$ of the time series with $N \leq \tilde{N}$ is observed. 
+However, that there are no selection variables, that determine whether or not
+a measurement is included in the data sample. Breaking this assumption can lead to selection bias.
+
+Furthermore we assume \textit{faithfulness}, meaning that conditional independence (CI) in the observed distribution $P(bf{V})$ are due to the causal structure of the underlying process instead of mere chance.
+
+
+As we will work with constraint based methods relying on conditional independence 
+
+
+auto-regressive process:
+meaning a model where the output variable depends on its own lagged values and on a stochastic noise term
+
+
+multivariate (vector) (output additionally depends on lagged values of the other variables in the model)
+
+stationary: same relationship for all tie shifted pairs
+
+discrete-time, e.g. days
+
+
+
+
+
+
+faithfulness
+
+
+\section{Related Work}
+constraint based method
+mainly conditional independence
+to remove and orient links
+FCI
+
+adaptation to time series: 
+time order restriction
+assumption stationarity
+tsFCI
+no latent variables
+
+granger causality, ts, but no contemporanious and latent
+
+SCM, additive noise models
+LiNGAM,
+TS-LiNGAM
+allows contemporanious links, assumes linear dependencies, additive non-Gaussian noise
+no latent variables
+
+
+
+
+
+%=============================================================================
+
+
+\section{My Application / My Method}
+
+
+%=============================================================================
+
+
+\section{Numerical Experiments}
+
+
+%=============================================================================
+
+
+\section{Application to real Data}
+Briefly describe dataset: FitBit Sense smartwatch, indoor and outdoor weather stations, screentime logger, external variables like moon illumination, season, day of the week, manual tracking of mood, and more. aggregated to 24h intervals.
+ref to old paper.
+
+
+%=============================================================================
+
+
+\section{Discussion and future work}
+
+
+
+%=============================================================================
+
+
+\subsection{Limitations}
+
+
+
+\subsection{Future Work}
+
+test\cite{peters_identifiability_2014}
+
+\subsection{Conclusion}
+
+
+
+\section{Acknowledgments}
+I thank Paul-Christian Buerkner for helpful discussions and suggestions.
+
+%Backmatter
+%=============================================================================
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+
+%=============================================================================
+
+\section{Appendix}
+\label{sec:Appendix}
+
+
+
+\end{document}
