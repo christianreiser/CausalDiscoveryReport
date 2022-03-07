@@ -10,10 +10,16 @@
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{subfigure}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc}
+\pagestyle{plain}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \pgfplotsset{compat=1.17}
+    
+
 \begin{document}
 
 \title{Causal discovery for time series with latent confounders\\
@@ -27,8 +33,9 @@ suggestions.}
 \IEEEauthorblockA{
 \textit{University of Stuttgart}\\
 Stuttgart, Germany \\
-st141151@stud.uni-stuttgart.de\\
-christian.reiser@insightme.org}
+% st141151@stud.uni-stuttgart.de\\
+christian.reiser@insightme.org
+}
 
 % \and
 
@@ -51,144 +58,331 @@ christian.reiser@insightme.org}
 \maketitle
 
 \begin{abstract}
-
+Reconstructing the causal relationships behind the phenomena we observe is a fundamental challenge in all areas of science.
+Discovering causal relationships through experiments is often infeasible, unethical, or expensive in complex systems. 
+However, increases in computational power allow us to process the ever-growing amount of data that modern science generates.
+This development has led to an emerging interest in the problem of causal discovery from observational data.
+This work evaluates the LPCMCI algorithm, which aims to find generators compatible with a multi-dimensional, highly autocorrelated time series while some variables are unobserved.
+Our numerical results find that LPCMCI performs best on auto-dependencies, then contemporaneous dependencies, and struggles most with lagged dependencies.
+The source code of this project is available online\footnote{Sourcecode: \href{https://github.com/christianreiser/correlate/blob/master/causal_discovery/LPCMCI/compute_experiments.py}{https://github.com/christianreiser/correlate/blob/master/causal\_discovery/LPCMCI/compute\_experiments.py}}.
 \end{abstract}
 
 \begin{IEEEkeywords}
-causal discovery, causal inference
+causal discovery, statistics
 \end{IEEEkeywords}
 
 %=============================================================================
 \section{Introduction}
-causal knowledge helps 
-
-understand and model physical systems, predict effect of interventions
-
-gain knowledge by experimental interventions 
-
-infeasible, expensive unethical. 
-
-observational causal discovery
-
-challenges:
-latent confounders, high dimensionality, non-linar dependencies, 
-time-series: autocorrelation, higher dim due to time lags, 
-
-constraint based methods in time series with latent confounders
-
-our contribution is: ...
-
-structure of the paper is introduction in problem and existing methods, our method, experiments, discussion
-
+Reconstructing the causal relationships behind the phenomena we observe is a fundamental challenge in all areas of science. It helps to build physical models and predict the effect of interventions\cite{pearl_book_2018}.
+The goal is to distinguish direct and indirect dependencies between variables, determine the dependencies' directionality, and identify common drivers.
+The standard approach is to learn causal relationships through conducting experiments. However, interventions are often infeasible, unethical, or expensive in complex systems\cite{runge_inferring_2019}. 
+Meanwhile, modern science generates a growing amount of data, which we can process due to increases in computational power.
+This development has led to an emerging interest in the problem of causal discovery from observational data\cite{peters_elements_2018}.
+In our work, we confront the challenges of high dimensional time-series with high auto-correlation and latent confounders with a constraint-based algorithm called LPCMCI\cite{gerhardus_high-recall_2021}.
 %=============================================================================
-\section{theory}
-
-Consider a multivariate state generator that we want reconstruct from data.
-We assume it is stationary and follows a vector-auto-regressive process, described by the structural causal model
+\section{Problem description and notation}
+\subsection{Preliminaries}
+Consider a multivariate state generator that we want to reconstruct from data.
+We assume it is stationary and follows a vector-auto-regressive process\footnote{Auto-regressive process is a model, where the output variable depends only on its own lagged values and on a stochastic noise term. A \textit{vector-}auto-regressive process extends the auto-regressive model to multiple dimensions. As explained later, the output of our vector-auto-regressive process additionally depends on its \textit{current} values.}, similar as used in \cite{gerhardus_high-recall_2021}, and described by the structural causal model (SCM)
 \begin{equation}
 V_{t}^{j}=f_{j}\left(pa\left(V_{t}^{j}\right), \eta_{t}^{j}\right) \quad \text { with } j=1, \ldots, \tilde{N},
 \end{equation}
 generating a multivariate time series $\mathbf{V}^{j}=\left(V_{t}^{j}, V_{t-1}^{j}, \ldots\right)$ for $j=1, \ldots, \tilde{N}$.
+The functions $f_i$ describe mechanisms in the physical world which depend on a set of causal parents $p a\left(V_{t}^{j}\right) \subseteq\left(\mathbf{V}_{t}, \mathbf{V}_{t-1}, \ldots, \mathbf{V}_{t-p_{t s}}\right)$ and jointly independent noise variables $\eta_{t}^{j}$. $p_{t s}$ represents the maximal time lag between cause and effect.
+The causal dependency of a pair of variables $\left(V_{t-\tau}^{i}, V_{t^{}}^{j}\right)$, with the time lag $\tau \geq 0$ is the same as for all time shifted pairs $\left(V_{t^{\prime}-\tau}^{i}, V_{t^{\prime}}^{j}\right)$ due to \textit{stationarity}.
+We allow for \textit{contemporaneous} ($\tau=0$) effects because, in many applications, the measurement frequency is often slower than the time scale of the causal processes. Although there are contemporaneous effects, we still assume \textit{acyclicity}.
+The SCM has \textit{latent variables}, because many real-world applications often only observe a subset $\mathbf{X}=\left\{\mathbf{X}^{1}, \ldots, \mathbf{X}^{N}\right\} \subseteq \mathbf{V}=\left\{\mathbf{V}^{1}, \mathbf{V}^{2}, \ldots\right\}$ of the time series with $N \leq \tilde{N}$. 
+However, we assume that no \textit{selection variables} determine which measurements to include in or exclude from the data sample. Breaking this assumption can lead to \textit{selection bias}.
+Furthermore, we assume \textit{faithfulness}, meaning that conditional independence (CI) in the observed distribution $P(\bf{X})$ is due to the causal structure of the underlying process instead of mere chance.
 
-The functions $f_i$ describe mechanisms in the physical world which depend on a set of causal parents $p a\left(V_{t}^{j}\right) \subseteq\left(\mathbf{V}_{t}, \mathbf{V}_{t-1}, \ldots, \mathbf{V}_{t-p_{t s}}\right)$ and noise variables $\eta_{t}^{j}$. The noise variables are jointly independent.
+\subsection{Implications of latent variables}
+% latent DAGs -> infinite DAGs
+Since the causal model we want to reconstruct from observational data has unobserved variables, we would like to search over the space of directed acyclic graphs (DAGs) with latent variables.
+However, since we do not restrict the number of unobserved variables, we would search among an infeasible number of DAGs.
 
-The causal dependency of a pair of variables $\left(V_{t-\tau}^{i}, V_{t^{}}^{j}\right)$, with the time lag $\tau \geq 0$ is the same as for all time shifted pairs $\left(V_{t^{\prime}-\tau}^{i}, V_{t^{\prime}}^{j}\right)$ due to stationarity.
+% ###
+% MAG
+% ###
+Instead, we represent each DAG with latent variables compatible with the observed data by a \textit{maximal ancestral graph (MAG)} over the observed variables, illustrating confounded variables with bi-directed edges ($\leftrightarrow$)\cite{richardson_ancestral_2002}.
+% semantics ->  <->
 
-We allow for contemporaneous effects, because in practice measurements are often averages of consecutive time points, which may be slower than the time scale of the causal processes. However, we still assume that there are no cyclic causal relationships.
+MAGs have different semantics than DAGs. In a MAG, the tail (-) of an arrow, as in A $\rightarrow$ B, says that A is an ancestor of B. Arrowheads ($<,>$), like the one pointing on B, specifies that B is not an ancestor of A. Furthermore, A and B might be confounded.
 
-Furthermore, we allow latent variables as often only a subset $\mathbf{X}=\left\{\mathbf{X}^{1}, \ldots, \mathbf{X}^{N}\right\} \subseteq \mathbf{V}=\left\{\mathbf{V}^{1}, \mathbf{V}^{2}, \ldots\right\}$ of the time series with $N \leq \tilde{N}$ is observed. 
-However, that there are no selection variables, that determine whether or not
-a measurement is included in the data sample. Breaking this assumption can lead to selection bias.
+A MAG represents the uncertainty that a variable could have an arrowhead (< or >) or tail (-) with a circle-head (o). For example, the link C $\circ$$\rightarrow$ D says that D is not an ancestor of C, but we do not know if A is an ancestor of B or not. 
+This case leaves us with three possibilities. First, there could be a directed path from C to D, second, the dependency could only be due to confounding, or third, it could be a combination of both.
 
-Furthermore we assume \textit{faithfulness}, meaning that conditional independence (CI) in the observed distribution $P(bf{V})$ are due to the causal structure of the underlying process instead of mere chance.
+Since arrowheads declare the variable next to it as a non-ancestor, bidirectional edges $\leftrightarrow$ exclude both variables from being the ancestor of the other variable and thus propose confounding between the two variables.
+% For every DAG with latent variables, a unique MAG exists over the observed variables, representing the identical set of conditional dependencies\cite{richardson_ancestral_2002}.
+CI-based methods can not differentiate all MAGs.
+\textit{Partially ancestral graphs (PAGs)} represent the Markov equivalence class that summarizes all different MAGs with the same set of conditional independencies \cite{zhang_causal_2008}.
+This relationship between MAGs and a PAG is analogous to DAGs and a PDAG.
 
-
-As we will work with constraint based methods relying on conditional independence 
-
-
-auto-regressive process:
-meaning a model where the output variable depends on its own lagged values and on a stochastic noise term
-
-
-multivariate (vector) (output additionally depends on lagged values of the other variables in the model)
-
-stationary: same relationship for all tie shifted pairs
-
-discrete-time, e.g. days
-
-
-
-
-
-
-faithfulness
+The goal is to find the PAG that satisfies the conditional independence information over the observed variables.
+% because we can not identify the one original DAG due to Markov equivalence and latent confounders.
 
 
-\section{Related Work}
-constraint based method
-mainly conditional independence
-to remove and orient links
-FCI
+\section{Related Methods}
 
-adaptation to time series: 
-time order restriction
-assumption stationarity
-tsFCI
-no latent variables
+Granger causality can infer the causal structure of time series. Intuitively we say that X Granger-causes Y when the prediction of Y from its past is improved by accounting for X's past.
+Then Y has to be dependent on the past of X given its past:
+\begin{equation}
+X \text { Granger-causes } Y: \Longleftrightarrow Y_{t} \not\!\perp\!\!\!\perp X_{\operatorname{past}(t)}  \mid Y_{\operatorname{past}(t)}
+\end{equation} \cite{peters_elements_2018}.
+\cite{granger_testing_1980} extends Granger causality to a multivariate setting. However, it can be misleading with the presence of instantaneous effects \cite{granger_clive_recent_1988} and requires that all variables are observed\cite{granger_testing_1980}.
 
-granger causality, ts, but no contemporanious and latent
+FullCI determines the absence of a link between one variable $X_{t-\tau}^{i}$ with time lag $\tau$ and another variable $X_{t}^{j}$ by testing for their independence while conditioning on the past of all other variables $\mathbf{X}_{t}^{-} \backslash\left\{X_{t-\tau}^{i}\right\}$. 
+Formally that is
+$X_{t-\tau}^{i} $
+$\!\perp\!\!\!\perp X_{t}^{j} $
+$\mid \mathbf{X}_{t}^{-}$
+$ \backslash\left\{X_{t-\tau}^{i}\right\}$ \cite{runge_pcmci_2019}.
+A problem is that high dimensionality of the conditioning set decreases the detection power of FullCI \cite{runge_pcmci_2019}.
+Usually the researcher decreases dimensionality by restricting the maximal time-lag $\tau_{max}$ through background knowledge or sets it to the largest time-lag with significant unconditional dependence\cite{runge_pcmci_2019}.
+It is actually sufficient to condition only on the parents of the two variables\cite{pearl_causality_2000}, which allows decreasing the dimensionality of the conditioning set further, especially if the true graph is sparse.
 
-SCM, additive noise models
-LiNGAM,
-TS-LiNGAM
-allows contemporanious links, assumes linear dependencies, additive non-Gaussian noise
-no latent variables
+The PC algorithm is well known to exploit sparsity by iteratively using small conditioning sets. However, when the size of the conditioning set is very limited, chances increase that true parents are not in the conditioning sets and false-positive links tend to remain.
 
+The PCMCI first runs a version of the PC algorithm adapted for time series, which removes most false links very efficiently, with the trade-off that some false positives remain. In the second step, it tests for momentary conditional independence
+\begin{equation}
+\mathrm{MCI}: X_{t-\tau}^{i} \not\!\perp\!\!\!\perp X_{t}^{j} \mid \widehat{\mathcal{P}}\left(X_{t}^{j}\right) \backslash\left\{X_{t-\tau}^{i}\right\}, \widehat{\mathcal{P}}\left(X_{t-\tau}^{i}\right)
+\end{equation}
+to remove the remaining false links\cite{runge_pcmci_2019}.
+According to the author, this resulted in faster runtime and increased detection power than FullCI\cite{runge_pcmci_2019}.
+PCMCI satisfies all of our requirements, except it assumes causal sufficiency, which means the absence of latent confounders.
 
+Another algorithm that allows for latent confounders is the Fast Causal Inference algorithm (FCI). It is constraint-based and outputs a PAG which represents possible MAGs \cite{spirtes_causation_2000}.
+The tsFCI algorithm adapts FCI to time-series and satisfies all of our requirements. It extends FCI by additionally exploiting that causes precede effects. Furthermore, it assumes stationarity which allows applying a found momentary dependency between a pair of variables to be the same for all other shifted pairs.
 
+So war we discussed methods that restrict the set of possible graphs via conditional independence and time ordering. The major downside of conditional independence-based methods is that they can not differentiate graphs within the Markov equivalence class. 
+Linear models with non-gaussian additive noise (LiNGAMs) allow differentiation within the Markov equivalence class: 
+If the true LiNGAM is 
+\begin{equation}
+Y=\alpha X+N_{Y}, \quad N_{Y} \!\perp\!\!\!\perp X
+\end{equation}
+with continuous random variables $X, Y$, and $N_Y$, then there exist no $\beta\in\mathbb{R}$ and random variable $N_X$ for the LiNGAM
+\begin{equation}
+X=\beta Y+N_{X}, \quad N_{X} \!\perp\!\!\!\perp Y
+\end{equation}\cite{peters_elements_2018}.
+Note that this statement does not hold if the noise is Gaussian.
+One can find proof of this statement in Appendix C.1 of \cite{peters_elements_2018}.
+
+TS-LiNGAM is an algorithm based on LiNGAM but adapted for time series. Like LiNGAM, it assumes linear dependencies and non-Gaussian noise. Since it can identify structure within the Markov equivalence class without relying only on time-ordering, it may have an advantage in handling contemporaneous links\cite{hyvarinen_causal_2008}.
+The downside of TS-LiNGAM is that hidden confounders may lead to erroneous results\cite{peters_causal_2013}.
+
+\section{LPCMCI}
+Detection power quantifies the probability of finding a true link between two nodes.
+The detection power of conditional independence based methods can be increased by
+\begin{enumerate}
+    \item increasing the number of samples in the dataset, which results in more reliable CI information,
+    \item decreasing the dimensionality of the problem\cite{runge_pcmci_2019},
+    \item increasing the causal effect size between the two variables,
+    \item increasing the statistical significance level of the conditional independence test,
+    \item decreasing the size of the conditioning set until it consists only of the parents of the two variables\cite{runge_pcmci_2019}.
+\end{enumerate} 
+
+In real-world applications, it is often possible to take more samples, decrease the problem's dimensionality by excluding irrelevant variables through expert knowledge, and increase the effect size by enhancing the signal-to-noise ratio of the measurements.
+However, these properties are of less interest when developing methods and are usually fixed through the dataset.
+
+Usually, the researcher sets the significance level to the false positive rate he allows \cite{gerhardus_high-recall_2021}.
+However, one can relax the statistical significance level of the conditional independence tests, which usually increases detection power.
+The first downside is that it increases the risk of detecting more spurious links.
+The second downside is that the increase in spurious links can decrease detection power in later steps. The reason is that later CI tests of true links might then condition on these false links and reduce the CI scores of the true links. Each score that falls below the significance level $\alpha$ leads to the erroneous removal of a true link. More intuitively, false links can "explain away" the effect of true links and thus remove them.
+We are less interested in keeping the false positive rate below a specific value in our test case. We rather optimize alpha to maximize the harmonic mean of precision and recall through cross-validation.
+
+Decreasing the size of the conditioning set until it consists only of the parents of the two variables is challenging because usually, the set of parents is unknown when testing for CI as algorithms first conduct the CI test and then orient the links, which allow inferring parenthood.
+However, this is where the LPCMCI algorithm improves.
+LPCMCI\cite{gerhardus_high-recall_2021} discards conditioning sets containing known non-ancestors of the two variables but includes their known parents.
+To overcome the challenge that ancestries and parentships are unknown, LPCMCI entangles CI tests with edge orientation to identify parentships. The algorithm then re-initializes the graph but keeps the identified parentships. It then applies the same process again but extends the conditioning sets with the previously identified parents.
+This procedure should remove most spurious links and assign edgemarks to the remaining links. However, the resulting graph tends to contain false links between confounded variables. 
+To remove them, the algorithm then performs the same procedure again but with modified conditioning sets
+\footnote{For more information on these modified conditioning sets, read about the $napds_t$ sets in definition S5 of\cite{gerhardus_high-recall_2021}.} 
+to identify confounded links\cite{gerhardus_high-recall_2021}.
+
+% when no autocorrelation: sufficient to condition on parents (Markov property)
+% With autocorrelation: often given only one repetition of the time series with finitely many time points — this differs from the usual i.i.d. setting, in which we observe every variable several times. 
+%With autocorrelation, the unknown true distribution has fewer degrees of freedom and will be typically wider than the assumed null distribution, leading to more false positives. -> also condition on lagged parents (parent of a parent) to account for autocorrelation
 
 
 %=============================================================================
 
+\section{Experiments}
+\subsection{Data-generation}
+The synthetic data generating SCM is similar to the one used in \cite{gerhardus_high-recall_2021} and given by
+\begin{equation}
+V_{t}^{j}=a_{j} V_{t-1}^{j}+\sum_{i} c_{i} f_{i}\left(V_{t-\tau_{i}}^{i}\right)+\eta_{t}^{j} \quad \text { for } \quad t \in\{1, \ldots, T\}, \quad j \in\{1, \ldots, \tilde{N} \}.
+\end{equation}
+The model consists of $\tilde{N}=11$ variables $V_t^j$. Three of these variables are selected at random and hidden later on.
+Every variable $V_t^j$ has a linear auto-dependency $a_j V_{t-1}^{j}$, with $a_j \sim \mathcal{U}(0.3,0.6)$, meaning that the strength of the auto-dependency is drawn from a uniform distribution with a lower bound of 0.3 and an upper bound of 0.6.
+In total there are $\tilde{N}=11$ randomly chosen variable pairs $(V_t^j,V^i_{t-\tau_i})$ with non-zero linear cross-dependencies $f_i \sim \pm \mathcal{U}(0.2,0.5)$. Otherwise $f_i=0$, meaning that all other variables have no cross-dependency.
+60\% of links are instantaneous, meaning they have a time-lag of $\tau =0$. The other 40\% have a time-lag of $\tau=1$.
+% The noises are drawn from a normal distribution with zero mean and variance drawn uniformly between 0.5 and two. Formally that is 
+$\eta^{j} \sim \mathcal{N}(0,\mathcal{U}[0.5,2])$.
+Every SCM generates a time-series of length T = 500, but if a model happens to be non-stationary, it is redrawn.
+We set the significance level to $\alpha =0.26$, which we optimized via cross-validation. During this hyperparameter search, we used a reduced number of SCM realizations of 50 to increase speed.
+For the final experiment, we use data from 4000 different SCMs.
 
-\section{My Application / My Method}
+
+\subsection{Evaluation metrics}
+Note that we aim to find the PAG that satisfies all conditional independence information instead of the data-generating DAG. Therefore, we also evaluate against the oracle PAG.
+
+The evaluation metrics distinguish between auto-dependencies and cross-dependencies. 
+Furthermore, cross-dependencies are separated into contemporaneous links and lagged links, whereas auto-dependencies always have a lag, as contemporaneous auto-dependencies would violate the assumption of acyclicity.
+% Note that the dimensionality of adjacencies is $(tau\_max*2 * N) + N$, because for every variable there can be an adjacency to every other variable can be an adjacency for each $tau$ in both directions plus one contemporaneous dimension with can 
+
+Furthermore, we distinguished dependencies on whether adjacencies and their correct edgemarks are detected or not. Edgemarks can be either an head ("$<$" or "$>$"), tail("-"), circle ("o") or conflict ("x").
+
+A conflict during edge orientation occurs when orientation rules of two triples with a common edgemark propose to orient the common edgemark as both tail and head\cite{runge_pcmci_2020}. The underlying problem is insufficient sample size or at least one assumption violation\cite{runge_tigramite_2022}.
 
 
+We evaluate the recall and precision of the predicted PAG against the oracle PAG:
+$Recall = \frac{tp}{tp+fn}$ and $Precision = \frac{tp}{tp+fp}$, where
+$tp$ stands for true positives, which is the number of edgemarks and adjacencies that are in the oracle PAG as well as the predicted PAG.
+$fn$ stands for false negatives,  the number of adjacencies or edgemarks in the oracle PAG but not in the predicted PAG.
+$fp$ stands for false positives, the number of adjacencies or edgemarks in the predicted PAG but not in the oracle PAG.
+
+Note that if the algorithm predicts the original data-generating DAG, the evaluation would still return a non-perfect score if the predicted DAG differs from the oracle PAG, even though the oracle PAG includes the predicted DAG.
+
+
+
+\subsection{Numerical Results}
+\begin{table}[!htb]
+    \caption{Numerical results}
+    \begin{minipage}{.5\linewidth}
+        \caption[]{precision and recall of edgemarks and adjacencies, which are further distinguished between lagged, contemporaneous, and auto-dependent links.}
+      \centering
+        \begin{tabular}{@{}llll@{}}
+            \toprule
+            \textbf{}                  &         & precision      & recall  \\ \midrule
+            \multirow{4}{*}{adjacency} & lagged  & 0.38             & 0.39       \\
+                                       & auto    & 1.00             & 1.00       \\
+                                       & contemp & 0.60             & 0.77       \\
+                                       & total   & 0.62             & 0.67       \\ \midrule
+            \multirow{4}{*}{edgemark}  & lagged  & 0.27             & 0.26        \\
+                                       & auto    & 0.74             & 0.73       \\
+                                       & contemp & 0.34             & 0.44       \\
+                                       & total   & 0.42             & 0.46       \\ \bottomrule
+            \end{tabular}
+            \label{tab:precision_recall}
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+            \caption[]{Rate of conflicting and unoriented edgemarks, which are further distinguished between lagged, contemporaneous, and auto-dependent links.}
+            \begin{tabular}{@{}llll@{}}
+            \toprule
+            \textbf{}                        &         & conflict rate    & unorianted rate  \\ \midrule
+            \multirow{4}{*}{conflict rate}   & lagged  & 0.00               & 0.14                \\
+                                             & auto    & 0.00               & 0.17                \\
+                                             & contemp & 0.09               & 0.05                \\
+                                             & total   & 0.03               & 0.13       \\ \bottomrule
+            \end{tabular}
+            \label{tab:conflict_unoriented}
+    \end{minipage} 
+\end{table}
+The $F_1$-score of the total adjacency is 0.65.
+The $F_1$-score of the total edgemarks is 0.44.
+% To obtain a single performance value we calculate the harmonic mean of both $F_1$-scores which is ??? for our dataset.
+Recall and precision of edgemarks are lower than that of adjacencies. One reason for this result is that each adjacency-$fn$ leads to two missing edgemarks, which increases the edgemark-$fn$ by two.
+Also, vice versa, each adjacency-$fp$ leads to an increase of edgemark-$fp$ by two.
+
+In the category of edgemarks, auto-dependencies have the highest recall and precision. The reason is that the edgemark pointing to the node later in time always has an arrowhead because a variable of the future can never be an ancestor of the past. However, the prediction of auto-dependencies is not perfect due to the possibility that auto-dependencies are confounded. Therefore, false positives can occur when mismatching "o" and "-" edgemarks at the other side of the arrow.
+
+In our test case, conflicting edgemark proposals only occur when orienting contemporaneous dependencies. A higher conflict rate for contemporaneous links seems generally plausible, as time-order can not orient these links.
+
+
+\subsection{Example result}
+% ORIGINAL DAG AND OBSERVED DATA
+Figure \ref{fig:DAG}(a) shows the data-generating DAG of eleven auto-dependent variables with eleven cross-dependencies.
+The number in the nodes represents the name of the variable.
+All auto-dependencies have a time delay of $\tau=1$.
+A "1" written on a curved arrow indicates that the cross-dependency has a time-delay $\tau=1$. Straight arrows without a number represent contemporaneous effects. 
+The color of an edge or node represents the strength of the cross- or auto-dependency, respectively.
+
+Figure \ref{fig:DAG}(b) shows data of the eight observed variables after dropping the information of the three latent variables. Note that the information about the number of hidden variables is also removed and can not be used in the next steps.
+\begin{figure}[htbp]
+    \centering
+    \subfigure[Original DAG of the data-generating process.]{
+    \includegraphics[width=0.46\linewidth]{figs/3.png}
+    }
+        \subfigure[Time-series of the observed variables.]{
+    \includegraphics[width=0.46\linewidth]{figs/2.png}
+    }
+    \caption{Screenshots of the data-generating DAG and its observed data.}
+        \label{fig:DAG}
+\end{figure}
+
+
+% oracle PAG 
+Figure \ref{fig:predicted}(a) shows the oracle PAG, which serves as ground truth. It satisfies all conditional independence information of the observed DAG perfectly.
+"o" edgemarks, e.g., as shown in the arrow from node 7 to node 8, represent the possibility that both a tail ("-") or arrowhead ("$<$","$>$") edgemark could exist.
+A bidirected, e.g., between nodes 1 and 8, indicates that neither of the two variables is a parent of the other, but they are confounded.
+The strength of all dependencies has a maximum value because generating the oracle PAG through conditional independence does not rely on the data but uses perfect conditional independence information of the data-generating DAG after removing the latent variables.
+
+% Predicted PAG
+Figure \ref{fig:predicted}(a) shows the predicted PAG. The colors represent the absolute link strength. It seems like there are many of the false positives have a weak absolute link strength.
+\begin{figure}[htbp]
+    \centering
+             \subfigure[Oracle PAG, which serves as ground truth. It satisfies all conditional independence information of the observed DAG perfectly.]{
+   \includegraphics[width=0.46\linewidth]{figs/4.png}
+    }
+    \subfigure[Predicted PAG that LPCMCI returns.]{
+    \includegraphics[width=0.46\linewidth]{figs/5_1.png}
+    }
+    \caption{Oracle and predicted PAG}
+        \label{fig:predicted}
+\end{figure}
+
+% % removed weak links
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.6\linewidth]{figs/6.png}
+%     \caption{removed weak links
+%     \label{fig:removed}
+% }
+% \end{figure}
+
+% 
+%=============================================================================
+% \section{Application to real data}
+% Briefly describe dataset: FitBit Sense smartwatch, indoor and outdoor weather stations, screentime logger, external variables like moon illumination, season, day of the week, manual tracking of mood, and more. Aggregated to 24h intervals.
+% ref to old paper.
 %=============================================================================
 
 
-\section{Numerical Experiments}
-
-
+\section{Limitations and future work}
 %=============================================================================
+A measurement frequency slower than the causal processes could violate the assumption of acyclicity of the graph. 
+Furthermore, the algorithm is limited to stationarity processes and assumes no selection bias in the data.
+In this work, we omitted background knowledge of (non-)ancestorships but planned to use it in future work as we expect that it increases performance.
 
+The evaluation process uses the oracle PAG as ground truth, which in most cases differs from the data-generating DAG. One can see the difference between these two graphs by comparing Figure \ref{fig:DAG}(a) and Figure \ref{fig:predicted}(a). The downside of evaluating against the oracle PAG is that a perfect prediction of the data-generating DAG would usually not receive a perfect score.
 
-\section{Application to real Data}
-Briefly describe dataset: FitBit Sense smartwatch, indoor and outdoor weather stations, screentime logger, external variables like moon illumination, season, day of the week, manual tracking of mood, and more. aggregated to 24h intervals.
-ref to old paper.
+Figure \ref{fig:removed} shows that the predicted PAG (b) has many false positives with a weak link strength when evaluating against the data-generating DAG (a). Figure \ref{fig:removed}(c) shows the predicted PAG where weak links with a strength below 0.10 are removed. In this example of Figure \ref{fig:removed} we observe that removing weak links decreases false positives without increasing false negatives. In future work, we want to investigate this phenomenon in more detail. Moreover, instead of removing weak links at the end, we also want to investigate if it would be helpful to iteratively lower the significance level $\alpha$ to remove false positives without inducing false negatives.
 
-
-%=============================================================================
-
-
-\section{Discussion and future work}
-
-
-
-%=============================================================================
-
-
-\subsection{Limitations}
+The algorithm only returns the absolute values of the predicted link strength, as one can see in Figure \ref{fig:predicted}. The reason is that it computers the link strength via the p-value. We plan to differentiate between positive and negative link strengths in future work by using a distance correlation metric (e.g., Pearson correlation coefficient in the linear case).
 
 
 
-\subsection{Future Work}
+% original DAG
+\begin{figure}[htbp]
+    \centering
+        \subfigure[Original DAG of the data-generating process.]{
+    \includegraphics[width=0.3\linewidth]{figs/3.png}
+    }
+    \subfigure[Predicted PAG]{
+    \includegraphics[width=0.3\linewidth]{figs/5_1.png}
+    }
+    \subfigure[Predicted PAG without weak links.]{
+    \includegraphics[width=0.3\linewidth]{figs/6.png}
+    }
+    \caption{Weak links of the predicted PAG tend to be false positives compared to the original data-generating DAG.}
+        \label{fig:removed}
+\end{figure}
 
-test\cite{peters_identifiability_2014}
 
 \subsection{Conclusion}
-
-
+In this work, we generated multi-dimensional time-series with high auto-correlation and latent variables and searched for methods to reconstruct the data-generating process from its observed data.
+We explained the advantages and limitations of today's main methods and applied the LPCMCI algorithm.
+For our generated datasets, LPCMCI performs best on auto-dependencies, then contemporaneous dependencies, and struggles most with lagged dependencies.
 
 \section{Acknowledgments}
 I thank Paul-Christian Buerkner for helpful discussions and suggestions.
@@ -202,8 +396,8 @@ I thank Paul-Christian Buerkner for helpful discussions and suggestions.
 
 %=============================================================================
 
-\section{Appendix}
-\label{sec:Appendix}
+% \section{Appendix}
+% \label{sec:Appendix}
 
 
 

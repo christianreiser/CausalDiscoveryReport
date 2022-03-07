@@ -1,4 +1,128 @@
 
+@article{hyvarinen_causal_2008,
+	title = {Causal {Modelling} {Combining} {Instantaneous} and {Lagged} {Eﬀects}: an {Identiﬁable} {Model} {Based} on {Non}-{Gaussianity}},
+	abstract = {Causal analysis of continuous-valued variables typically uses either autoregressive models or linear Gaussian Bayesian networks with instantaneous eﬀects. Estimation of Gaussian Bayesian networks poses serious identiﬁability problems, which is why it was recently proposed to use non-Gaussian models. Here, we show how to combine the nonGaussian instantaneous model with autoregressive models. We show that such a nonGaussian model is identiﬁable without prior knowledge of network structure, and we propose an estimation method shown to be consistent. This approach also points out how neglecting instantaneous eﬀects can lead to completely wrong estimates of the autoregressive coeﬃcients.},
+	language = {en},
+	journal = {ICML},
+	author = {Hyvarinen, Aapo and Shimizu, Shohei and Hoyer, Patrik O},
+	year = {2008},
+	pages = {8},
+}
+
+@inproceedings{peters_causal_2013,
+	title = {Causal {Inference} on {Time} {Series} using {Restricted} {Structural} {Equation} {Models}},
+	volume = {26},
+	url = {https://proceedings.neurips.cc/paper/2013/hash/47d1e990583c9c67424d369f3414728e-Abstract.html},
+	urldate = {2022-03-04},
+	booktitle = {Advances in {Neural} {Information} {Processing} {Systems}},
+	publisher = {Curran Associates, Inc.},
+	author = {Peters, Jonas and Janzing, Dominik and Schölkopf, Bernhard},
+	year = {2013},
+}
+
+@article{runge_pcmci_2020,
+	title = {{PCMCI}+ - {Discovering} contemporaneous and lagged causal relations in autocorrelated nonlinear time series datasets},
+	abstract = {The paper introduces a novel conditional independence (CI) based method for linear and nonlinear, lagged and contemporaneous causal discovery from observational time series in the causally sufﬁcient case. Existing CI-based methods such as the PC algorithm and also common methods from other frameworks suffer from low recall and partially inﬂated false positives for strong autocorrelation which is an ubiquitous challenge in time series. The novel method, PCMCI+, extends PCMCI [Runge et al., 2019b] to include discovery of contemporaneous links. PCMCI+ improves the reliability of CI tests by optimizing the choice of conditioning sets and even beneﬁts from autocorrelation. The method is order-independent and consistent in the oracle case. A broad range of numerical experiments demonstrates that PCMCI+ has higher adjacency detection power and especially more contemporaneous orientation recall compared to other methods while better controlling false positives. Optimized conditioning sets also lead to much shorter runtimes than the PC algorithm. PCMCI+ can be of considerable use in many real world application scenarios where often time resolutions are too coarse to resolve time delays and strong autocorrelation is present.},
+	language = {en},
+	journal = {PMLR Proceedings},
+	author = {Runge, Jakob},
+	year = {2020},
+	pages = {46},
+}
+
+@article{granger_clive_recent_1988,
+	title = {Some recent development in a concept of causality},
+	volume = {39},
+	issn = {0304-4076},
+	url = {https://www.sciencedirect.com/science/article/pii/0304407688900450},
+	doi = {10.1016/0304-4076(88)90045-0},
+	abstract = {The paper considers three separate but related topics. (i) What is the relationship between causation and co-integration? If a pair of I(1) series are co-integration, there must be causation in at least one direction. An implication is that some tests of causation based on different series may have missed one source of causation. (ii) Is there a need for a definition of ‘instantaneous causation’ in a decision science? It is argued that no such definition is required. (iii) Can causality tests be used for policy evaluation? It is suggested that these tests are useful, but that they should be evaluated with care.},
+	language = {en},
+	number = {1},
+	urldate = {2022-02-14},
+	journal = {Journal of Econometrics},
+	author = {Granger, Clive},
+	month = sep,
+	year = {1988},
+	pages = {199--211},
+}
+
+@misc{runge_tigramite_2022,
+	title = {Tigramite – {Causal} discovery for time series datasets},
+	copyright = {GPL-3.0},
+	url = {https://github.com/jakobrunge/tigramite/blob/d9d06a1d865582c2f68ee71b313e93dcbd77abba/tutorials/tigramite_tutorial_pcmciplus.ipynb},
+	abstract = {Tigramite is a time series analysis python module for causal discovery. The Tigramite documentation is at},
+	urldate = {2022-03-03},
+	collaborator = {Runge, Jakob},
+	month = mar,
+	year = {2022},
+	note = {original-date: 2017-05-15T10:20:26Z},
+}
+
+@article{zhang_causal_2008,
+	title = {Causal {Reasoning} with {Ancestral} {Graphs}},
+	abstract = {Causal reasoning is primarily concerned with what would happen to a system under external interventions. In particular, we are often interested in predicting the probability distribution of some random variables that would result if some other variables were forced to take certain values. One prominent approach to tackling this problem is based on causal Bayesian networks, using directed acyclic graphs as causal diagrams to relate post-intervention probabilities to pre-intervention probabilities that are estimable from observational data. However, such causal diagrams are seldom fully testable given observational data. In consequence, many causal discovery algorithms based on data-mining can only output an equivalence class of causal diagrams (rather than a single one). This paper is concerned with causal reasoning given an equivalence class of causal diagrams, represented by a (partial) ancestral graph. We present two main results. The ﬁrst result extends Pearl (1995)’s celebrated do-calculus to the context of ancestral graphs. In the second result, we focus on a key component of Pearl’s calculus—the property of invariance under interventions, and give stronger graphical conditions for this property than those implied by the ﬁrst result. The second result also improves the earlier, similar results due to Spirtes et al. (1993).},
+	language = {en},
+	journal = {Journal of Machine Learning Research},
+	author = {Zhang, Jiji},
+	year = {2008},
+	pages = {38},
+}
+
+@book{peters_elements_2018,
+	title = {Elements of causal inference: foundations and learning algorithms},
+	volume = {88},
+	shorttitle = {Elements of causal inference},
+	url = {https://www.tandfonline.com/doi/full/10.1080/00949655.2018.1505197},
+	language = {en},
+	urldate = {2021-11-10},
+	publisher = {The MIT Press},
+	author = {Peters, Jonas and Janzig, Dominik and Schölkopf, Bernhard},
+	month = nov,
+	year = {2018},
+}
+
+@article{colombo_order-independent_nodate,
+	title = {Order-{Independent} {Constraint}-{Based} {Causal} {Structure} {Learning}},
+	abstract = {We consider constraint-based methods for causal structure learning, such as the PC-, FCI-, RFCI- and CCD- algorithms (Spirtes et al., 1993, 2000; Richardson, 1996; Colombo et al., 2012; Claassen et al., 2013). The ﬁrst step of all these algorithms consists of the adjacency search of the PC-algorithm. The PC-algorithm is known to be order-dependent, in the sense that the output can depend on the order in which the variables are given. This order-dependence is a minor issue in low-dimensional settings. We show, however, that it can be very pronounced in high-dimensional settings, where it can lead to highly variable results. We propose several modiﬁcations of the PC-algorithm (and hence also of the other algorithms) that remove part or all of this order-dependence. All proposed modiﬁcations are consistent in high-dimensional settings under the same conditions as their original counterparts. We compare the PC-, FCI-, and RFCI-algorithms and their modiﬁcations in simulation studies and on a yeast gene expression data set. We show that our modiﬁcations yield similar performance in low-dimensional settings and improved performance in high-dimensional settings. All software is implemented in the R-package pcalg.},
+	language = {en},
+	author = {Colombo, Diego and Maathuis, Marloes H},
+	pages = {42},
+}
+
+@book{spirtes_causation_2000,
+	address = {New York, NY},
+	series = {Lecture {Notes} in {Statistics}},
+	title = {Causation, {Prediction}, and {Search}},
+	volume = {81},
+	isbn = {978-1-4612-7650-0 978-1-4612-2748-9},
+	url = {http://link.springer.com/10.1007/978-1-4612-2748-9},
+	language = {en},
+	urldate = {2021-11-23},
+	publisher = {Springer New York},
+	author = {Spirtes, Peter and Glymour, Clark and Scheines, Richard},
+	editor = {Berger, J. and Fienberg, S. and Gani, J. and Krickeberg, K. and Olkin, I. and Singer, B.},
+	year = {2000},
+	doi = {10.1007/978-1-4612-2748-9},
+}
+
+@article{granger_testing_1980,
+	title = {Testing for causality: {A} personal viewpoint},
+	volume = {2},
+	issn = {0165-1889},
+	shorttitle = {Testing for causality},
+	url = {https://www.sciencedirect.com/science/article/pii/016518898090069X},
+	doi = {10.1016/0165-1889(80)90069-X},
+	abstract = {A general definition of causality is introduced and then specialized to become operational. By considering simple examples a number of advantages, and also difficulties, with the definition are discussed. Tests based on the definitions are then considered and the use of post-sample data emphasized, rather than relying on the same data to fit a model and use it to test causality. It is suggested that a Bayesian viewpoint should be taken in interpreting the results of these tests. Finally, the results of a study relating advertising and consumption are briefly presented.},
+	language = {en},
+	urldate = {2022-02-14},
+	journal = {Journal of Economic Dynamics and Control},
+	author = {Granger, C. W. J.},
+	month = jan,
+	year = {1980},
+	pages = {329--352},
+}
+
 @article{peters_identifiability_2014,
 	title = {Identifiability of {Gaussian} structural equation models with equal error variances},
 	volume = {101},
@@ -15,30 +139,6 @@
 	note = {arXiv: 1205.2536},
 	keywords = {Mathematics - Statistics Theory, Statistics - Machine Learning},
 	pages = {219--228},
-}
-
-@article{zhang_causal_nodate,
-	title = {Causal {Reasoning} with {Ancestral} {Graphs}},
-	abstract = {Causal reasoning is primarily concerned with what would happen to a system under external interventions. In particular, we are often interested in predicting the probability distribution of some random variables that would result if some other variables were forced to take certain values. One prominent approach to tackling this problem is based on causal Bayesian networks, using directed acyclic graphs as causal diagrams to relate post-intervention probabilities to pre-intervention probabilities that are estimable from observational data. However, such causal diagrams are seldom fully testable given observational data. In consequence, many causal discovery algorithms based on data-mining can only output an equivalence class of causal diagrams (rather than a single one). This paper is concerned with causal reasoning given an equivalence class of causal diagrams, represented by a (partial) ancestral graph. We present two main results. The ﬁrst result extends Pearl (1995)’s celebrated do-calculus to the context of ancestral graphs. In the second result, we focus on a key component of Pearl’s calculus—the property of invariance under interventions, and give stronger graphical conditions for this property than those implied by the ﬁrst result. The second result also improves the earlier, similar results due to Spirtes et al. (1993).},
-	language = {en},
-	author = {Zhang, Jiji},
-	pages = {38},
-}
-
-@article{zhang_causal_nodate-1,
-	title = {Causal {Reasoning} with {Ancestral} {Graphs}},
-	abstract = {Causal reasoning is primarily concerned with what would happen to a system under external interventions. In particular, we are often interested in predicting the probability distribution of some random variables that would result if some other variables were forced to take certain values. One prominent approach to tackling this problem is based on causal Bayesian networks, using directed acyclic graphs as causal diagrams to relate post-intervention probabilities to pre-intervention probabilities that are estimable from observational data. However, such causal diagrams are seldom fully testable given observational data. In consequence, many causal discovery algorithms based on data-mining can only output an equivalence class of causal diagrams (rather than a single one). This paper is concerned with causal reasoning given an equivalence class of causal diagrams, represented by a (partial) ancestral graph. We present two main results. The ﬁrst result extends Pearl (1995)’s celebrated do-calculus to the context of ancestral graphs. In the second result, we focus on a key component of Pearl’s calculus—the property of invariance under interventions, and give stronger graphical conditions for this property than those implied by the ﬁrst result. The second result also improves the earlier, similar results due to Spirtes et al. (1993).},
-	language = {en},
-	author = {Zhang, Jiji},
-	pages = {38},
-}
-
-@article{colombo_order-independent_nodate,
-	title = {Order-{Independent} {Constraint}-{Based} {Causal} {Structure} {Learning}},
-	abstract = {We consider constraint-based methods for causal structure learning, such as the PC-, FCI-, RFCI- and CCD- algorithms (Spirtes et al., 1993, 2000; Richardson, 1996; Colombo et al., 2012; Claassen et al., 2013). The ﬁrst step of all these algorithms consists of the adjacency search of the PC-algorithm. The PC-algorithm is known to be order-dependent, in the sense that the output can depend on the order in which the variables are given. This order-dependence is a minor issue in low-dimensional settings. We show, however, that it can be very pronounced in high-dimensional settings, where it can lead to highly variable results. We propose several modiﬁcations of the PC-algorithm (and hence also of the other algorithms) that remove part or all of this order-dependence. All proposed modiﬁcations are consistent in high-dimensional settings under the same conditions as their original counterparts. We compare the PC-, FCI-, and RFCI-algorithms and their modiﬁcations in simulation studies and on a yeast gene expression data set. We show that our modiﬁcations yield similar performance in low-dimensional settings and improved performance in high-dimensional settings. All software is implemented in the R-package pcalg.},
-	language = {en},
-	author = {Colombo, Diego and Maathuis, Marloes H},
-	pages = {42},
 }
 
 @article{runge_pcmci_2019,
@@ -107,14 +207,6 @@
 	pages = {42},
 }
 
-@article{colombo_order-independent_nodate-1,
-	title = {Order-{Independent} {Constraint}-{Based} {Causal} {Structure} {Learning}},
-	abstract = {We consider constraint-based methods for causal structure learning, such as the PC-, FCI-, RFCI- and CCD- algorithms (Spirtes et al., 1993, 2000; Richardson, 1996; Colombo et al., 2012; Claassen et al., 2013). The ﬁrst step of all these algorithms consists of the adjacency search of the PC-algorithm. The PC-algorithm is known to be order-dependent, in the sense that the output can depend on the order in which the variables are given. This order-dependence is a minor issue in low-dimensional settings. We show, however, that it can be very pronounced in high-dimensional settings, where it can lead to highly variable results. We propose several modiﬁcations of the PC-algorithm (and hence also of the other algorithms) that remove part or all of this order-dependence. All proposed modiﬁcations are consistent in high-dimensional settings under the same conditions as their original counterparts. We compare the PC-, FCI-, and RFCI-algorithms and their modiﬁcations in simulation studies and on a yeast gene expression data set. We show that our modiﬁcations yield similar performance in low-dimensional settings and improved performance in high-dimensional settings. All software is implemented in the R-package pcalg.},
-	language = {en},
-	author = {Colombo, Diego and Maathuis, Marloes H},
-	pages = {42},
-}
-
 @article{gerhardus_lpcmci_2020,
 	title = {{LPCMCI} - {High}-recall causal discovery for autocorrelated time series with latent confounders},
 	abstract = {We present a new method for linear and nonlinear, lagged and contemporaneous constraint-based causal discovery from observational time series in the presence of latent confounders. We show that existing causal discovery methods such as FCI and variants suffer from low recall in the autocorrelated time series case and identify low effect size of conditional independence tests as the main reason. Information-theoretical arguments show that effect size can often be increased if causal parents are included in the conditioning sets. To identify parents early on, we suggest an iterative procedure that utilizes novel orientation rules to determine ancestral relationships already during the edge removal phase. We prove that the method is order-independent, and sound and complete in the oracle case. Extensive simulation studies for different numbers of variables, time lags, sample sizes, and further cases demonstrate that our method indeed achieves much higher recall than existing methods for the case of autocorrelated continuous variables while keeping false positives at the desired level. This performance gain grows with stronger autocorrelation. At github.com/jakobrunge/tigramite we provide Python code for all methods involved in the simulation studies.},
@@ -136,15 +228,6 @@
 	year = {2021},
 	note = {Conference Name: EGU General Assembly Conference Abstracts
 ADS Bibcode: 2021EGUGA..23.8259G},
-}
-
-@article{runge_pcmci_2020,
-	title = {{PCMCI}+ - {Discovering} contemporaneous and lagged causal relations in autocorrelated nonlinear time series datasets},
-	abstract = {The paper introduces a novel conditional independence (CI) based method for linear and nonlinear, lagged and contemporaneous causal discovery from observational time series in the causally sufﬁcient case. Existing CI-based methods such as the PC algorithm and also common methods from other frameworks suffer from low recall and partially inﬂated false positives for strong autocorrelation which is an ubiquitous challenge in time series. The novel method, PCMCI+, extends PCMCI [Runge et al., 2019b] to include discovery of contemporaneous links. PCMCI+ improves the reliability of CI tests by optimizing the choice of conditioning sets and even beneﬁts from autocorrelation. The method is order-independent and consistent in the oracle case. A broad range of numerical experiments demonstrates that PCMCI+ has higher adjacency detection power and especially more contemporaneous orientation recall compared to other methods while better controlling false positives. Optimized conditioning sets also lead to much shorter runtimes than the PC algorithm. PCMCI+ can be of considerable use in many real world application scenarios where often time resolutions are too coarse to resolve time delays and strong autocorrelation is present.},
-	language = {en},
-	author = {Runge, Jakob},
-	year = {2020},
-	pages = {46},
 }
 
 @article{reiser_predicting_2021,
@@ -317,18 +400,6 @@ X,Y
 	pages = {1--102},
 }
 
-@book{peters_elements_2018,
-	title = {Elements of causal inference: foundations and learning algorithms},
-	volume = {88},
-	shorttitle = {Elements of causal inference},
-	url = {https://www.tandfonline.com/doi/full/10.1080/00949655.2018.1505197},
-	language = {en},
-	urldate = {2021-11-10},
-	author = {Peters, Jonas and Janzig, Dominik and Schölkopf, Bernhard},
-	month = nov,
-	year = {2018},
-}
-
 @article{reick_estimation_2021,
 	title = {Estimation of {Bivariate} {Structural} {Causal} {Models} by {Variational} {Gaussian} {Process} {Regression} {Under} {Likelihoods} {Parametrised} by {Normalising} {Flows}},
 	url = {http://arxiv.org/abs/2109.02521},
@@ -459,22 +530,6 @@ Subject\_term\_id: climate-sciences;computational-science;databases;environmenta
 	language = {en},
 	author = {Aliferis, Constantin and Statnikov, Alexander},
 	pages = {6},
-}
-
-@book{spirtes_causation_1993,
-	address = {New York, NY},
-	series = {Lecture {Notes} in {Statistics}},
-	title = {Causation, {Prediction}, and {Search}},
-	volume = {81},
-	isbn = {978-1-4612-7650-0 978-1-4612-2748-9},
-	url = {http://link.springer.com/10.1007/978-1-4612-2748-9},
-	language = {en},
-	urldate = {2021-11-23},
-	publisher = {Springer New York},
-	author = {Spirtes, Peter and Glymour, Clark and Scheines, Richard},
-	editor = {Berger, J. and Fienberg, S. and Gani, J. and Krickeberg, K. and Olkin, I. and Singer, B.},
-	year = {1993},
-	doi = {10.1007/978-1-4612-2748-9},
 }
 
 @unpublished{sontag_lecture_nodate,
