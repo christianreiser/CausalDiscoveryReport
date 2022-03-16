@@ -297,109 +297,14 @@ In total there are $11$ randomly chosen variable pairs $(V_t^j,V^i_{t-\tau_i})$ 
 The noises $\eta^{j} \sim \mathcal{N}(0,\mathcal{U}[0.5,2])$.
 Every SCM generates a discrete time-series of length T = 500. The experiment uses data of 4000 SCM. If a SCM generates a non-stationary time-series it is redrawn. This can happen when there is a positive feedback loop in the SCM that leads to a non-stationary trend in the data.
 
-\subsection{Evaluation metrics}
-\label{sec:eval}
-Recall from section \ref{sec:implLatent} that we do not try to reconstruct the DAG that represents the original data-generating SCM. Instead we aim to find and evaluate against the oracle PAG, which is the PAG that satisfies all conditional independence information of the observed variables. 
-The evaluation metrics distinguish between auto-dependencies and cross-dependencies. 
-Furthermore, cross-dependencies are separated into contemporaneous links and lagged links, whereas auto-dependencies always have a lag, as contemporaneous auto-dependencies would violate the assumption of acyclicity.
-% Note that the dimensionality of adjacencies is $(tau\_max*2 * N) + N$, because for every variable there can be an adjacency to every other variable can be an adjacency for each $tau$ in both directions plus one contemporaneous dimension with can 
-Furthermore, we distinguish dependencies on whether adjacencies and their correct edgemarks are detected or not. In contrast to the oracle PAG, the LPCMCI can additionally return conflict edgemarks ("x"), although they will always be evaluated as false positives.
-A conflict during edge orientation occurs when orientation rules of two variable triples propose to orient a common edgemark as both tail and head\cite{runge_pcmci_2020}. The underlying problem would be insufficient sample size or at least one assumption violation\cite{runge_tigramite_2022}.
 
-We measure \textit{recall} and \textit{precision} of the adjacency and edge-orientation predictions. Recall (also known as \textit{sensitivity} measures the rate that a true link or adjacency is detected. Precision (also known as \textit{specificity} measures the rate that a predicted link is actually there.) Formally, that is $recall = \frac{tp}{tp+fn}$ and $precision = \frac{tp}{tp+fp}$, where
-$tp$ stands for true positives, which is the number of edgemarks and adjacencies that are in the oracle PAG as well as the predicted PAG.
-$fn$ stands for false negatives,  the number of adjacencies or edgemarks in the oracle PAG but not in the predicted PAG.
-$fp$ stands for false positives, the number of adjacencies or edgemarks in the predicted PAG but not in the oracle PAG.
-By this definition, each adjacency-$fn$ leads to two missing edgemarks, which increases the edgemark-$fn$ by two.
-Also, vice versa, each adjacency-$fp$ leads to an increase of edgemark-$fp$ by two.
-
-In order reduce the problem to a single-objective optimization problem, we aggregate the objectives of precision and recall of edgemarks and adjacencies to a single score via the harmonic mean:
-\begin{equation}
-harmonic\_score=\frac{4}{\frac{1}{recall\_adjacencies}+\frac{1}{precision\_adjacencies}+\frac{1}{recall\_edgemarks}+\frac{1}{precision\_edgemarks}}.
-\label{eq:harmonicscore}
-\end{equation}
-We also used this $harmonic\_score$ as the objective to optimize the significance level $\alpha=0.26$. More specifically, we decreased the number of SCM realizations from 4000 to 50 to increase speed and searched manually for an $\alpha$ that leads to the best $harmonic\_score$.
-
-Note that if the algorithm predicts the original data-generating DAG, the evaluation would still return a non-perfect score if the predicted DAG differs from the oracle PAG, even though the oracle PAG includes the predicted DAG. More specifically, the observed variables over the original DAG of the data-generating SCM is always included in the oracle PAG. But the oracle PAG is often larger, as it includes all MAGs that satisfy the CI information over the observed variables, even if their adjacencies are not in the data-generating DAG. Since the oracle PAG serves as ground truth, every adjacency that is not predicted but in the oracle PAG is evaluated as a false negative, even when it is not in the data-generating DAG.
-For example, Figure \ref{fig:predicted}(b) shows an adjacency from node 6 to 8 which is not in the data-generating DAG of \ref{fig:predicted}(a). Figure \ref{fig:predicted}(c) shows that this adjacency is not detected, thus, the missing adjacency is evaluated as a false negative.
-
-
-\subsection{Numerical Results}
-\begin{table}[!htb]
-    \caption{Numerical results}
-    \begin{minipage}{.5\linewidth}
-        \caption[]{precision and recall of edgemarks and adjacencies, which are further distinguished between lagged, auto-dependent, and contemporaneous links.}
-      \centering
-        \begin{tabular}{@{}llll@{}}
-            \toprule
-            \textbf{}                  &         & precision      & recall  \\ \midrule
-            \multirow{4}{*}{adjacency} & auto    & 1.00             & 1.00       \\
-                                       & contemp & 0.60             & 0.77       \\
-                                       & lagged  & 0.38             & 0.39       \\
-                                       & total   & 0.62             & 0.67       \\ \midrule
-            \multirow{4}{*}{edgemark}  & auto    & 0.74             & 0.73       \\
-                                       & contemp & 0.34             & 0.44       \\
-                                       & lagged  & 0.27             & 0.26        \\
-                                       & total   & 0.42             & 0.46       \\ \bottomrule
-            \end{tabular}
-            \label{tab:precision_recall}
-    \end{minipage}%
-    \begin{minipage}{.5\linewidth}
-      \centering
-            \caption[]{Rate of conflicting and unoriented edgemarks, which are further distinguished between lagged, auto-dependent, and contemporaneous links.}
-            \begin{tabular}{@{}llll@{}}
-            \toprule
-            \textbf{}                        &         & conflict rate    & unorianted rate  \\ \midrule
-            \multirow{4}{*}{conflict rate}   & lagged  & 0.00               & 0.14                \\
-                                             & auto    & 0.00               & 0.17                \\
-                                             & contemp & 0.09               & 0.05                \\
-                                             & total   & 0.03               & 0.13       \\ \bottomrule
-            \end{tabular}
-            \label{tab:conflict_unoriented}
-    \end{minipage} 
-\end{table}
-% We report the $F_1$-scores, which are the harmonic mean of precision and recall. The $F_1$-score of the total adjacency is 0.65.
-% The $F_1$-score of the total edgemarks is 0.44.
-Table \ref{shows the results.} 
-
-precision auto adj: 1 vs 1.0 even random would be one as all variables are autocorrelated
-recall auto adj     1 vs 0.5 all links have high autocorr and high auto corr is the strength of LPCMCI.
-precision auto edge:0.74 vs 0.75? one is always correct as cannot go back in time (tail). only differentiate circle from arrowhead of the other
-recall auto adj     0.73 vs 0.625 but given adj then 0.75 
-recall conte adj:   0.77 vs 0.5 tpr also better than lagged in gerhardus
-precis conte adj:   0.6 vs 0.5 fpr also lower of cont than lagged in ger
-recall conte edg:   0.44 vs 0.165:tpr also better than lagged in gerhardus
-precis conte edg:   0.34 vs precision also better than lagged in ger
-recall lagge adj:   
-precis lagge adj:
-recall lagge edg:   
-precis lagge edg:
-
-lagged vs cont: mby oracle PAG more demanding for lagged?
-
-recall better than precision: idk, alpha is even lower than 0.5, mby because sparse graph
-
-The overall performance of LPCMCI on our dataset is $harmonic\_score = 0.53$.
-
-
-Recall and precision of edgemarks are lower than that of adjacencies. One reason for this result is that each 
-
-Auto-dependencies have the highest recall and precision. The reason is that the edgemark pointing to the node later in time always has an arrowhead because a variable of the future can never be an ancestor of the past. However, the prediction of auto-dependencies is not perfect due to the possibility that auto-dependencies are latently confounded. Therefore, false positives can occur when mismatching $\circ$ and "-" edgemarks at the other side of the arrow.
-
-The algorithm struggles most to detect the lagged adjacencies and edgemarks.
-In our test case, conflicting edgemark proposals only occur when orienting contemporaneous dependencies. A higher conflict rate for contemporaneous links seems generally plausible, as time-order cannot orient these links.
-
-
-\subsection{Example result}
+\subsection{Example}
 % ORIGINAL DAG AND OBSERVED DATA
 Figure \ref{fig:predicted}(a) shows the data-generating DAG of eleven auto-dependent variables with eleven cross-dependencies.
 The number in the nodes represents the name of the variable.
 All auto-dependencies have a time delay of $\tau=1$.
 A "1" written on a curved arrow indicates that the cross-dependency has a time-delay $\tau=1$. Straight arrows without a number represent contemporaneous effects. 
 The color of an edge or node represents the strength of the cross- or auto-dependency, respectively.
-
-
-
 
 % oracle PAG 
 Figure \ref{fig:predicted}(b) shows the oracle PAG, which serves as ground truth. It satisfies all conditional independence information of the observed DAG perfectly.
@@ -424,14 +329,155 @@ Figure \ref{fig:predicted}(c) shows the predicted PAG. The colors represent the 
         \label{fig:predicted}
 \end{figure}
 
-% % removed weak links
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.6\linewidth]{figs/6.png}
-%     \caption{removed weak links
-%     \label{fig:removed}
-% }
-% \end{figure}
+
+
+\subsection{Evaluation metrics}
+\label{sec:eval}
+Recall from section \ref{sec:implLatent} that we do not try to reconstruct the DAG that represents the original data-generating SCM. Instead we aim to find and evaluate against the oracle PAG, which is the PAG that satisfies all conditional independence information of the observed variables. 
+The evaluation metrics distinguish between auto-dependencies and cross-dependencies. 
+Furthermore, cross-dependencies are separated into contemporaneous links and lagged links, whereas auto-dependencies always have a lag, as contemporaneous auto-dependencies would violate the assumption of acyclicity.
+% Note that the dimensionality of adjacencies is $(tau\_max*2 * N) + N$, because for every variable there can be an adjacency to every other variable can be an adjacency for each $tau$ in both directions plus one contemporaneous dimension with can 
+Furthermore, we distinguish dependencies on whether adjacencies and their correct edgemarks are detected or not. In contrast to the oracle PAG, the LPCMCI can additionally return conflict edgemarks ("x"), although they will always be evaluated as false positives.
+A conflict during edge orientation occurs when orientation rules of two variable triples propose to orient a common edgemark as both tail and head\cite{runge_pcmci_2020}. The underlying problem would be insufficient sample size or at least one assumption violation\cite{runge_tigramite_2022}.
+
+We measure \textit{recall} and \textit{precision} of the adjacency and edge-orientation predictions. Recall (also known as \textit{sensitivity} measures the rate that a true link or adjacency is detected. Precision (also known as \textit{specificity} measures the rate that a predicted link is actually there.) Formally, that is $recall = \frac{tp}{tp+fn}$ and $precision = \frac{tp}{tp+fp}$, where
+$tp$ stands for true positives, which is the number of edgemarks and adjacencies that are in the oracle PAG as well as the predicted PAG.
+$fn$ stands for false negatives,  the number of adjacencies or edgemarks in the oracle PAG but not in the predicted PAG.
+$fp$ stands for false positives, the number of adjacencies or edgemarks in the predicted PAG but not in the oracle PAG.
+Note that LPCMCI, only predicts edgemarks of detected adjacencies. Its implication is that each adjacency-$fn$ leads to two missing edgemarks, which increases the edgemark-$fn$ by two.
+Also, vice versa, each adjacency-$fp$ leads to an increase of edgemark-$fp$ by two.
+
+A predictor can easily increase precision at the cost of recall, and vice versa. For example a recall of one and precision of zero in adjacency detection can be achieved by blindly proposing all adjacencies to exist. We would not gain any information with such a result but the average between precision and recall would still be 0.5. A better metric is the \textit{$F_1$-scores}
+\begin{equation}
+F_{1}=2 \cdot \frac{\text { precision } \cdot \text { recall }}{\text { precision }+\text { recall }},
+\end{equation}
+which is the harmonic mean of precision and recall.
+To provide intuition about the $F_1$-score, lets look at four cases. Here we assume balanced datasets. In the binary case this means the dataset has the same number of positives as negatives. 
+\begin{itemize}
+    \item Suppose an algorithm does not detect anything in a dataset with positives. It still achieves a precision of one but at the cost of a recall of zero. Then its $F_1$-score would also be zero, which describes the situation well as the is no gain in knowledge.
+    \item An algorithm achieves a recall and precision of one, indicating perfect performance. Then the $F_1$-score will also be one.
+    \item In a binary case, as in adjacency detection, a random algorithm has an expected recall and precision of 0.5, which leads to a $F_1$-score$=0.5$.
+    \item In a dataset with three classes (as in edgemark classification with the classes $\circ, -, >$), a random algorithm can achieve an expected recall and precision of 0.33, which leads to a $F_1$-score$=0.33$.
+\end{itemize}
+
+In order reduce the problem to a single-objective optimization problem, we compute the harmonic mean
+\begin{equation}
+harmonic\_score=\frac{4}{\frac{1}{recall\_adjacencies}+\frac{1}{precision\_adjacencies}+\frac{1}{recall\_edgemarks}+\frac{1}{precision\_edgemarks}},
+\label{eq:harmonicscore}
+\end{equation}
+that aggregates the objectives of precision and recall of edgemarks and adjacencies to a single score.
+
+We also used the $harmonic\_score$ as the objective to optimize the significance level $\alpha=0.26$. More specifically, we decreased the number of SCM realizations from 4000 to 50 to increase speed and searched manually for an $\alpha$ that leads to the best $harmonic\_score$.
+
+Note that if the algorithm predicts the original data-generating DAG, the evaluation would still return a non-perfect score if the predicted DAG differs from the oracle PAG, even though the oracle PAG includes the predicted DAG. More specifically, the observed variables over the original DAG of the data-generating SCM is always included in the oracle PAG. But the oracle PAG is often larger, as it includes all MAGs that satisfy the CI information over the observed variables, even if their adjacencies are not in the data-generating DAG. Since the oracle PAG serves as ground truth, every adjacency that is not predicted but in the oracle PAG is evaluated as a false negative, even when it is not in the data-generating DAG.
+For example, Figure \ref{fig:predicted}(b) shows an adjacency from node 6 to 8 which is not in the data-generating DAG of \ref{fig:predicted}(a). Figure \ref{fig:predicted}(c) shows that this adjacency is not detected, thus, the missing adjacency is evaluated as a false negative.
+
+
+\subsection{Numerical Results}
+\begin{table}[!htb]
+\begin{center}
+        \caption{Numerical results}
+    \begin{minipage}{.5\linewidth}
+        \caption[]{precision, recall, $F_1$-score, and the F1-baseline of edgemarks and adjacencies, which are further distinguished between lagged, auto-dependent, and contemporaneous links. The F1-baseline is the expected value of random guessing.}
+      \centering
+        \begin{tabular}{@{}llllll@{}}
+            \toprule
+            \textbf{}                  &         & precision      & recall  &  $F_1$-score & $F_1$-baseline    \\ \midrule
+            \multirow{4}{*}{adjacency} & auto-dependent    & 1.00             & 1.00  &  1.00     & 0.50     \\
+                                       & contemporaneous & 0.60             & 0.77  &  0.67     & 0.50     \\
+                                       & lagged  & 0.38             & 0.39  &  0.38     & 0.50     \\
+                                       & total   & 0.62             & 0.67  &  0.64     & 0.50     \\ \midrule
+            \multirow{4}{*}{edgemark}  & auto-dependent    & 0.74             & 0.73  &  0.73     & 0.33     \\
+                                       & contemporaneous & 0.34             & 0.44  &  0.38     & 0.33     \\
+                                       & lagged  & 0.27             & 0.26  &  0.26     & 0.33      \\
+                                       & total   & 0.42             & 0.46  &  0.44     & 0.33     \\ 
+            \end{tabular}
+            \label{tab:precision_recall}
+    \end{minipage}%
+    % \begin{minipage}{.5\linewidth}
+    %   \centering
+    %         \caption[]{Rate of conflicting and unoriented edgemarks, which are further distinguished between lagged, auto-dependent, and contemporaneous links.}
+    %         \begin{tabular}{@{}lll@{}}
+    %         \toprule
+    %                  & conflict rate    & unorianted rate  \\ \midrule
+    %          lagged  & 0.00               & 0.14                \\
+    %          auto    & 0.00               & 0.17                \\
+    %          contemporaneous & 0.09               & 0.05                \\
+    %          total   & 0.03               & 0.13       \\ 
+    %         \end{tabular}
+    %         \label{tab:conflict_unoriented}
+    % \end{minipage} 
+    \end{center}
+\end{table}
+% We report the $F_1$-scores, which are the harmonic mean of precision and recall. The $F_1$-score of the total adjacency is 0.65.
+% The $F_1$-score of the total edgemarks is 0.44.
+Table \ref{tab:precision_recall} shows the precision, recall, $F_1$-scores of the LPCMCI algorithm and baseline $F_1$-scores which are the expected $F_1$-scores of random guessing. 
+
+
+% This means recall and precision of LPCMCI edgemark prediction is above 0.33 the algorithm performs better than random.
+% We also calculate a score that shows how much better the LPCMCI algorithm performs compared to the random algorithm. the difference between the LPCMCI score and the random score and normalize it over the remaining are where the : $ (LPCMCI\_score-random\_score)/(1-random\_score)$
+
+
+TODO:
+compare to random chance -> explained variance
+give explanations  why its better or worse than random
+compare to LPCMCI paper
+
+was haben wir gelernt: 
+    assumptions are important, 
+    PAGs are difficult to interpret, 
+    knowledge gain is relatively low (explained variance)
+    detecting auto-correlations works well
+    why are lagged adjancencies so bad?
+was soll uns das konkret sagen?
+
+
+
+
+
+
+The overall performance of LPCMCI on our dataset is $harmonic\_score = 0.53$.
+
+
+Recall and precision of edgemarks are lower than that of adjacencies. One reason for this result is that each 
+
+
+
+
+
+% order independent
+LPCMCI performs best to detect auto-dependencies, then contemporaneus links and struggles most with lagged links, which also happens to be the order in which LPCMCI tests for links. One might thus hypothesize  that the earlier tests result in better performance than later tests. However, the output of LPCMCI does not depend on the order in which the variables are tested\cite{gerhardus_high-recall_2021}.
+
+In the following we discuss the performance of the LPCMCI algorithm in each category by comparing its $F_1$-scores to the random baseline.
+\subsubsection{Auto-dependent adjacencies}
+Within the auto-dependent adjacencies, LPCMCI has a perfect $F_1$-score of one while $F_1$-baseline=0.5. The reason for perfect precision of LPCMCI is simply that the datasets are totally imbalanced as all nodes of the oracle PAGs have auto-dependencies. Thus there can never be a false positive.
+LPCMCI also has perfect recall. This can at least partially explained by the fact that the performance of LPCMCI grows with stronger auto-correlation\cite{gerhardus_high-recall_2021}, and our dataset has relatively high auto-correlations with values uniformly distributed between 0.3-0.6. However, it is not clear to me if this is the only reason.
+
+\subsubsection{Auto-dependent edgemark classification}
+The edgemark classification of LPCMCI achieves the best results for auto-dependent links with an $F_1$-score of 0.73 while the $F_1$-baseline is 0.33. One reason for this increased performance is that the edgemark pointing to the node later in time can never be the ancestor of a variable earlier in time, thus the edgemark is certainly $>$. 
+However, edgemark detection of the variable earlier in time can still fail, because it still has the possibilities to be a $<$ (indicating certainty of confounding), $-$ (proposing ancestorship), or $\circ$ (indicating uncertainty of the two).
+Another reason for increased performance compared to the baseline is that recall of edgemark detection profits from the high recall of auto-dependent adjacency detection, because there are neigther false negative nor false positive adjacencies that lead to false negatives and false positives in edgemark detection, as described in section \ref{sec:eval}.
+
+\subsubsection{Contemporaneous adjacency detection}
+Within the contemporaneous adjacencies, LPCMCI has a $F_1$-score of 0.67, which is higher than its $F_1$-baseline=0.50 and higher than the performance of LPCMCI on lagged adjacencies.
+One might find it counter-intuitive, why LPCMCI performs better on contemporaneous links compared to lagged links, even though lagged links provide additional constraints due to time ordering. However, remember that we evaluate against the oracle PAG, which already takes additional time ordering constraints into account.
+I still cannot explain why the performance of contemporaneous links is better than on lagged links.
+It is, however, also the case in the results of the algorithms inventor Gerhardus\cite{gerhardus_high-recall_2021}.
+% Also the recall of 0.77 is considerably higher than the precision of 0.67. I don't know why.
+
+\subsubsection{Contemporaneous edgemark classification}
+Within the contemporaneous edgemarks, LPCMCI has a $F_1$-score of 0.38, which is a little better than its $F_1$-baseline=0.33 and again considerably again higher than the performance of LPCMCI on lagged edgemarks.
+A reason for better performance of LPCMCI on contemporaneous edgemarks compared to lagged edgemarks is that, adjacency detection was already better for contemporaneous adjacencies compared to lagged adjacencies. The effect is the same as for auto-dependencies and described in section \ref{sec:eval}
+
+\subsubsection{Lagged adjacency detection}
+Surprisingly, the $F_1$-score of 0.38 of LPCMCI on lagged adjacencies is worse than the $F_1$-baseline with 0.5. I don't know why LPCMCI seemingly performs worse than a random guessing. Maybe it has something to do that the baseline distribution score is based on a balanced dataset, but our dataset has more non-existent lagged adjacencies than existent adjacencies.
+
+\subsubsection{Lagged edgemark classification}
+The $F_1$-score of 0.26 of LPCMCI on lagged edgemarks is a little worse than the $F_1$-baseline with 0.33.
+This could again be an effect of the low performance of lagged adjacencies.
+
+\subsubsection{Conflicts in edgemark proposals}
+In our test case, conflicting edgemark proposals only occur when orienting contemporaneous dependencies. A higher conflict rate for contemporaneous links seems generally plausible, as time-order cannot orient these links.
 
 
 
