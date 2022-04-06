@@ -66,16 +66,13 @@ Discovering causal relationships through experiments is often infeasible, unethi
 However, increases in computational power allow us to process the ever-growing amount of data that modern science generates.
 This development has led to an emerging interest in the problem of causal discovery from observational data.
 This work evaluates the LPCMCI algorithm, which aims to find generators compatible with a multi-dimensional, highly autocorrelated time series while some variables are unobserved.
-Our numerical results find that LPCMCI achieves a harmonic score of 0.53 while the baseline of a random algorithm is 0.20. 
-The significant outperformance of LPCMCI against the random algorithm shows that LPCMCI allows gaining helpful information when the
-baseline is that we do not know anything. However, one should not rely on the results as the performance of 0.53 is far
-from the perfect score of 1.00. 
-Furthermore, we find that LPCMCI performs best on auto-dependencies, then contemporaneous dependencies, and struggles most with lagged dependencies.
+We find that LPCMCI performas much better than a random algorithm that mimics no knowing anything but is still far away from an optimal detection.
+Furthermore, LPCMCI performs best on auto-dependencies, then contemporaneous dependencies, and struggles most with lagged dependencies.
 The source code of this project is available online\footnote{Sourcecode: \href{https://github.com/christianreiser/correlate/blob/master/causal_discovery/LPCMCI/compute_experiments.py}{https://github.com/christianreiser/correlate/blob/master/causal\_discovery/LPCMCI/compute\_experiments.py}}.
 \end{abstract}
 
 \begin{IEEEkeywords}
-observational causal discovery, causal inference, statistics
+observational causal discovery, causal inference, causality, statistics
 \end{IEEEkeywords}
 
 %=============================================================================
@@ -198,7 +195,7 @@ PAGs have the same semantics as MAGs except that a PAG can also represent uncert
 This case leaves us with three possibilities. First, there could be a directed path from C to D; second, the dependency could only be due to latent confounding; third, it could be a combination of both. 
 
 % goal, ground truth, oracle
-It is difficult to find the PAG that satisfies all constraints.
+It is difficult to find the PAG that satisfies all CI constraints.
 Nevertheless, finding this PAG is our goal. We evaluate the algorithm's performance against the PAG that perfectly satisfies all CI information over the observed variables. We call this perfect PAG \textit{oracle PAG}, and it serves as our ground truth.
 Figure \ref{fig:DAGMAG}(c) shows the oracle PAG of the previous example. 
 
@@ -233,7 +230,7 @@ The \textit{PC algorithm}, named after its inventors Peter and Clark, is well kn
 % PCMCI
 The \textit{PCMCI} algorithm first runs a version of the PC algorithm adapted for time series, which removes most false links very efficiently, with the trade-off that some false positives remain\cite{runge_pcmci_2019}. In the second step, it tests for \textit{momentary conditional independence (MCI)}
 \begin{equation}
-\mathrm{MCI}: X_{t-\tau}^{i} \not\!\perp\!\!\!\perp X_{t}^{j} \mid \left[[{pa}\left(X_{t}^{j}\right) \backslash\left\{X_{t-\tau}^{i}\right\}], {pa}\left(X_{t-\tau}^{i}\right)\right]
+\mathrm{MCI}: X_{t-\tau}^{i} \!\perp\!\!\!\perp X_{t}^{j} \mid \left[{pa}\left(X_{t}^{j}\right) \backslash\left\{X_{t-\tau}^{i}\right\}, {pa}\left(X_{t-\tau}^{i}\right)\right]
 \end{equation}
 to remove the remaining false links\cite{runge_pcmci_2019}.
 This resulted in faster runtime and increased detection power than FullCI\cite{runge_pcmci_2019}.
@@ -241,7 +238,7 @@ PCMCI allows for multivariate and highly auto-dependent time series. Its extensi
 
 % FCI
 An algorithm that allows for latent confounders is the \textit{Fast Causal Inference algorithm (FCI)}\cite{spirtes_causation_2000}. It is constraint-based and outputs a PAG which represents the possible MAGs.
-The tsFCI algorithm adapts FCI to time-series \cite{entner_causal_2010}. It extends FCI by additionally exploiting that causes precede effects. Furthermore, it assumes stationarity which allows applying a found momentary dependency between a pair of variables to be the same for all other shifted pairs.
+The tsFCI algorithm adapts FCI to time-series \cite{entner_causal_2010}. It extends FCI by additionally exploiting time-ordering. Furthermore, it assumes stationarity which allows applying a found momentary dependency between a pair of variables to be the same for all other shifted pairs.
 
 % LiNGAM
 So war we discussed methods that restrict the set of possible graphs via conditional independence and time ordering. As mentioned in section \ref{sec:implLatent}, the major downside of conditional independence-based methods is that they cannot differentiate Markov equivalent graphs. 
@@ -278,7 +275,7 @@ However, these properties are of less interest when developing methods and are u
 Typically, the researcher allows a specific false-positive rate that determines the significance level \cite{gerhardus_high-recall_2021}.
 However, one can relax the statistical significance level of the conditional independence tests, which usually increases detection power.
 Nevertheless, the downside is that it increases the risk of detecting more false links.
-Furthermore, these false links in later steps can also decrease detection power. The reason is that later CI tests of true links might condition on these false links and reduce the CI scores of the true links. Each score that falls below the significance level $\alpha$ leads to the false removal of a true link. More intuitively, false links can "explain away" the effect of true links and thus remove them.
+Furthermore, these false links in later steps can also decrease detection power. The reason is that later CI tests of true links might condition on these false links and reduce the CI scores of the true links. Each score that falls below the nominal significance level $\alpha$ leads to the false removal of a true link. More intuitively, false links can "explain away" the effect of true links and thus remove them.
 In our test case, we are less interested in keeping the false positive rate strictly below a specific value due to the cost of much higher false-negative rates. We rather optimize alpha to minimize true positives and true negatives equally strong. More details follow in chapter \ref{sec:eval}.
 
 % LPCMCI
@@ -335,7 +332,7 @@ A bidirected edge, e.g., between nodes 1 and 8, indicates that neither of the tw
 % The nodes and edges of the oracle PAG have a dark red color because their dependency strength is set to a maximum value. The reason is that generating the oracle PAG through conditional independence does not rely on the data but uses perfect conditional independence information of the data-generating DAG after removing the latent variables.
 
 % Predicted PAG
-Figure \ref{fig:predicted}(c) shows the predicted PAG. The colors represent the absolute link strength. 
+Figure \ref{fig:predicted}(c) shows the predicted PAG, obtained by the LPCMCI algorithm. The colors represent the absolute link strength. 
 It seems like there are many of the false positives have a weak absolute link strength.
 \begin{figure}[htbp]
     \centering
@@ -361,15 +358,15 @@ Furthermore, we distinguish dependencies on whether adjacencies and their correc
 A conflict occurs during edge orientation when orientation rules of two variable triples propose to orient a common edgemark as both tail and head\cite{runge_pcmci_2020}. The underlying problem would be insufficient sample size or at least one assumption violation\cite{runge_tigramite_2022}.
 
 % precision-recall tp fp fn
-We compute \textit{recall} and \textit{precision} of the adjacency and edge-orientation predictions. Recall (also known as \textit{sensitivity}) indicates the rate of detecting a true link or adjacency. Precision (also known as \textit{specificity}) measures the rate that a predicted link is actually there. Formally, that is $recall = \frac{tp}{tp+fn}$ and $precision = \frac{tp}{tp+fp}$, where
+We compute \textit{recall} and \textit{precision} of the adjacency and edge-orientation predictions. Recall (also known as \textit{sensitivity}) indicates the rate of detecting a true link or adjacency. Precision (also known as \textit{positive predictive value}) measures the rate that a predicted link is actually there. Formally, that is $recall = \frac{tp}{tp+fn}$ and $precision = \frac{tp}{tp+fp}$, where
 $tp$ stands for true positives, which is the number of edgemarks and adjacencies that are in the oracle PAG as well as the predicted PAG.
 $fn$ stands for false negatives,  the number of adjacencies or edgemarks in the oracle PAG but not in the predicted PAG.
 $fp$ stands for false positives, the number of adjacencies or edgemarks in the predicted PAG but not in the oracle PAG.
 Note that LPCMCI predicts edgemarks for all detected adjacencies and never for undetected adjacencies. It implies that each adjacency-$fn$ leads to two missing edgemarks, which increase the edgemark-$fn$ by two.
 Also, vice versa, each adjacency-$fp$ leads to two edgemark predictions that are not in the ground truth, thus increasing the edgemark-$fp$ by two.
-d
+
 % F1 score
-A predictor can easily increase precision at the cost of recall, and vice versa. For example, a recall of 1.00 and precision of 0.00 in adjacency detection can be achieved by blindly proposing all adjacencies to exist. We would not gain any information with such a result, but the arithmetic mean of precision and recall would still be 0.5. A more appropriate metric is the \textit{$F_1$-score}
+A predictor can easily increase precision at the cost of recall, and vice versa. For example, a perfect recall but low precision in adjacency detection can be achieved by blindly proposing all adjacencies to exist. We would not gain any information with such a result, but the arithmetic mean of precision and recall would still be $>0.5$. A more appropriate metric is the \textit{$F_1$-score}
 \begin{equation}
 F_{1}=2 \cdot \frac{\text { precision } \cdot \text { recall }}{\text { precision }+\text { recall }},
 \end{equation}
@@ -418,7 +415,7 @@ For example, Figure \ref{fig:predicted}(b) shows an adjacency from node 6 to 8, 
             \label{tab:precision_recall}
     \end{center}
 \end{table}
-LPCMCI has an overall performance of $harmonic\_score = 0.53$ on our dataset, while the perfect score would be 1.00. This indicates that LPCMCI has great difficulty predicting the PAGs of our datasets. However, it is important to remind that a random algorithm does not achieve a score of 0.5, suggesting LPCMCI is just slightly better than random. Instead, LPCMCI strongly exceeds the performance of the random algorithm, which has a $harmonic\_score = 0.20$. 
+LPCMCI has an overall performance of $harmonic\_score = 0.53$ on our dataset, while the perfect score would be 1.00. This indicates that LPCMCI has great difficulty predicting the PAGs of our datasets. However, it is important to remind that a random algorithm does not achieve a score of 0.5, which would suggest that LPCMCI is just slightly better than random. Instead, LPCMCI strongly exceeds the performance of the random algorithm, as the random algorithm has only a $harmonic\_score = 0.20$. 
 
 Table \ref{tab:precision_recall} shows the precision, recall, $F_1$-scores of the LPCMCI algorithm, and baseline $F_1$-scores of the different categories, and we discuss these results below.
 
@@ -432,7 +429,7 @@ However, edgemark detection of the variable earlier in time can still fail becau
 Another reason for the good performance of LPCMCI is that recall of edgemark detection profits from the high recall of auto-dependent adjacency detection. The reason is that LPCMCI neither had false-negative nor false-positive auto-dependent adjacencies that directly cause false negatives and false positives in edgemark detection. The mechanism of how false adjacency detection causes false edgemark detection was explained in section \ref{sec:eval}.
 
 \subsubsection{Contemporaneous adjacency detection}
-Within the contemporaneous adjacencies, LPCMCI has a $F_1$-score of 0.67, which is significantly higher than its $F_1$-baseline=0.29 and higher than the performance of LPCMCI on lagged adjacencies.
+Within the contemporaneous adjacencies, LPCMCI has a $F_1$-score of 0.67, which is substantially higher than its $F_1$-baseline=0.29 and higher than the performance of LPCMCI on lagged adjacencies.
 One might find it counter-intuitive why LPCMCI performs better on contemporaneous links compared to lagged links, even though lagged links provide additional constraints due to time ordering. However, remember that we evaluate against the oracle PAG, which already takes additional time ordering constraints into account. For example, let us take two links that are not in the SCM but cannot be removed with perfect conditional independence. One of these links is lagged and can be removed due to time-ordering. The other is contemporaneous and cannot be removed with perfect time order information. Then only the contemporaneous link will be in the oracle PAG, which serves as ground truth. As the contemporaneous link is in the ground truth, it will not be evaluated as a false positive. This is one reason why lagged links do not necessarily have a higher evaluation score than contemporaneous links, but it does not explain why the opposite is true.
 I still cannot explain why the performance of contemporaneous links is better than on lagged links.
 It is, however, also the case in the results of the original LPCMCI paper \cite{gerhardus_high-recall_2021}.
@@ -452,7 +449,7 @@ One reason for the low score is the effect of the low performance on lagged adja
 In our test case, conflicting edgemark proposals occur with a rate of 0.03 and only during the orientation of contemporaneous adjacencies. A higher conflict rate for contemporaneous links seems generally plausible, as time-ordering can solve conflicts for lagged and auto-dependent links but not for contemporaneous links.
 
 \subsubsection{Order independence}
-LPCMCI performs best to detect auto-dependencies, then contemporaneous links and struggles most with lagged links, which also happens to be the order in which LPCMCI tests for links. One might thus hypothesize that earlier tests work better than later tests. However, the output of LPCMCI does not depend on the order in which the variables are tested\cite{gerhardus_high-recall_2021}.
+LPCMCI performs best to detect auto-dependencies, then contemporaneous links and struggles most with lagged links, which also happens to be the order in which LPCMCI tests for links. One might thus hypothesize that tests earlier in the order work better than later tests. However, the output of LPCMCI does not depend on the order in which the variables are tested\cite{gerhardus_high-recall_2021}.
 
 %=============================================================================
 
@@ -470,7 +467,7 @@ While it could be interesting, LPCMCI does not aim to reconstruct the data-gener
 Instead, LPCMCI aims to predict the oracle PAG; thus, the oracle PAG serves as ground truth. Evaluating against the oracle PAG can lead to counter-intuitive results. For example, if LPCMCI predicts the perfect data-generating DAG, the score would be non-perfect if it differs from the oracle PAG. One can see the difference between these two graphs by comparing Figure \ref{fig:predicted}(a) (without the three latent variables and its links) and Figure \ref{fig:predicted}(b).
 
 % removing weak links
-Figure \ref{fig:removed} shows that the predicted PAG has many false positives with a weak link strength when evaluating against the data-generating DAG. Figure \ref{fig:removed}(c) shows the predicted PAG where weak links with a strength below 0.10 are removed. In this example of Figure \ref{fig:removed}, we observe that removing weak links decreases false positives without increasing false negatives. In future work, one could investigate this phenomenon in more detail. Moreover, instead of removing weak links at the end, it could be helpful to iteratively lower the significance level $\alpha$ to remove false positives without inducing false negatives.
+Figure \ref{fig:removed} shows that the predicted PAG has many false positives with a weak link strength when evaluating against the data-generating DAG. Figure \ref{fig:removed}(c) shows the predicted PAG of the LPCMCI algorithm, where weak links with a strength below 0.10 are removed. In this example of Figure \ref{fig:removed}, we observe that removing weak links decreases false positives without increasing false negatives. In future work, one could investigate this phenomenon in more detail. Moreover, instead of removing weak links at the end, it could be helpful to iteratively lower the significance level $\alpha$ to remove false positives without inducing false negatives.
 
 Another limitation of LPCMCI is that the algorithm only returns the absolute values of the predicted link strength, as one can see in Figure \ref{fig:predicted}. The reason is that it computers the link strength via the p-value. This could be improved by differentiating between positive and negative link strengths using a distance correlation metric (e.g., Pearson correlation coefficient in the linear case).
 
