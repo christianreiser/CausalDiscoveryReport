@@ -63,10 +63,9 @@ christian.reiser@insightme.org
 \begin{abstract}
 Reconstructing the causal relationships behind the phenomena we observe is a fundamental challenge in all areas of science.
 Discovering causal relationships through experiments is often infeasible, unethical, or expensive in complex systems. 
-However, increases in computational power allow us to process the ever-growing amount of data that modern science generates.
-This development has led to an emerging interest in the problem of causal discovery from observational data.
+However, increases in computational power allow us to process the ever-growing amount of data that modern science generates, leading to an emerging interest in the causal discovery problem from observational data.
 This work evaluates the LPCMCI algorithm, which aims to find generators compatible with a multi-dimensional, highly autocorrelated time series while some variables are unobserved.
-We find that LPCMCI performas much better than a random algorithm that mimics no knowing anything but is still far away from an optimal detection.
+We find that LPCMCI performs much better than a random algorithm mimicking not knowing anything but is still far from optimal detection.
 Furthermore, LPCMCI performs best on auto-dependencies, then contemporaneous dependencies, and struggles most with lagged dependencies.
 The source code of this project is available online\footnote{Sourcecode: \href{https://github.com/christianreiser/correlate/blob/master/causal_discovery/LPCMCI/compute_experiments.py}{https://github.com/christianreiser/correlate/blob/master/causal\_discovery/LPCMCI/compute\_experiments.py}}.
 \end{abstract}
@@ -99,8 +98,8 @@ generating a multivariate time series $\mathbf{V}^{j}=\left(V_{t}^{j}, V_{t-1}^{
 The functions $f_i$ describe mechanisms in the physical world which depend on a set of causal parents $p a\left(V_{t}^{j}\right) \subseteq\left(\mathbf{V}_{t}, \mathbf{V}_{t-1}, \ldots, \mathbf{V}_{t-p_{t s}}\right)$ and jointly independent noise variables $\eta_{t}^{j}$. $p_{t s}$ represents the maximal time lag between cause and effect.
 
 % assumptions
-We assume \textit{causal stationary}, which means that dependencies between all a pairs of variables $\left(V_{t-\tau}^{i}, V_{t^{}}^{j}\right)$ with the time lag $\tau \geq 0$ is the same as for all time-shifted pairs $\left(V_{t^{\prime}-\tau}^{i}, V_{t^{\prime}}^{j}\right)$\cite{runge_causal_2018}. Therefore, causal stationarity simplifies the problem by reusing a momentary dependency found at one point in the time series and setting its dependency to all other time-shifted pairs.
-We allow for \textit{contemporaneous} ($\tau=0$) effects because, in many applications, the measurement frequency is often slower than the time scale of the causal processes. Although contemporaneous effects exist, we still assume \textit{acyclicity}, which means the causal graph has no cycles.
+We assume \textit{causal stationary}, which means that dependencies between all pairs of variables $\left(V_{t-\tau}^{i}, V_{t^{}}^{j}\right)$ with the time lag $\tau \geq 0$ is the same as for all time-shifted pairs $\left(V_{t^{\prime}-\tau}^{i}, V_{t^{\prime}}^{j}\right)$\cite{runge_causal_2018}. Therefore, causal stationarity simplifies the problem by reusing a momentary dependency found at one point in the time series and setting its dependency to all other time-shifted pairs.
+We allow for \textit{contemporaneous} ($\tau=0$) effects because, in many applications, the measurement frequency is often slower than the time scale of the causal processes. Although we allow for contemporaneous effects exist, we still assume \textit{acyclicity}, which means the causal graph has no cycles.
 The SCM has \textit{latent variables}, which are variables in the data-generating SCM that are unobserved. We choose to include latent variables, because many real-world applications often only record a subset $\mathbf{X}=\left\{\mathbf{X}^{1}, \ldots, \mathbf{X}^{N}\right\} \subseteq \mathbf{V}=\left\{\mathbf{V}^{1}, \mathbf{V}^{2}, \ldots\right\}$ of the time series with $N \leq \tilde{N}$. 
 However, we assume the absence of \textit{selection variables}, meaning there are no variables determining which measurements to include in or exclude from the data sample. Breaking this assumption can lead to selection bias and invalidate results.
 Furthermore, we assume \textit{faithfulness}, meaning that conditional independence (CI) in the observed distribution $P(\bf{X})$ is due to the causal structure of the underlying process instead of mere chance\cite{gerhardus_high-recall_2021}.
